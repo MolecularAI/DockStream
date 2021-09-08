@@ -18,6 +18,7 @@ from dockstream.core.docker import Docker
 from dockstream.core.OpenEyeHybrid.OpenEyeHybrid_result_parser import OpenEyeHybridResultParser
 from dockstream.utils.enums.OE_Hybrid_enums import OpenEyeHybridLigandPreparationEnum
 from dockstream.utils.enums.OE_Hybrid_enums import OpenEyeHybridExecutablesEnum, OpenEyeHybridOutputKeywordsEnum
+from dockstream.utils.general_utils import gen_temp_file
 
 from dockstream.utils.translations.molecule_translator import MoleculeTranslator
 from dockstream.utils.dockstream_exceptions import DockingRunFailed
@@ -101,7 +102,7 @@ class OpenEyeHybrid(Docker):
         for start_index, sublist in zip(start_indices, sublists):
             # generate temporary input files and output directory
             cur_tmp_output_dir = tempfile.mkdtemp()
-            _, cur_tmp_sdf = tempfile.mkstemp(prefix=str(start_index), suffix=".sdf", dir=cur_tmp_output_dir)
+            cur_tmp_sdf = gen_temp_file(prefix=str(start_index), suffix=".sdf", dir=cur_tmp_output_dir)
 
             # write-out the temporary input file
             one_written = False
@@ -123,7 +124,7 @@ class OpenEyeHybrid(Docker):
             tmp_input_sdf_paths.append(cur_tmp_sdf)
 
             # add the path to which "_dock_subjob()" will write the result SDF
-            _, output_sdf_path = tempfile.mkstemp(prefix=str(start_index), suffix="_result.sdf", dir=cur_tmp_output_dir)
+            output_sdf_path = gen_temp_file(prefix=str(start_index), suffix="_result.sdf", dir=cur_tmp_output_dir)
             tmp_output_sdf_paths.append(output_sdf_path)
         return tmp_output_dirs, tmp_input_sdf_paths, tmp_output_sdf_paths
 

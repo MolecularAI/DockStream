@@ -23,6 +23,7 @@ from dockstream.core.docker import Docker
 from dockstream.core.Gold.Gold_result_parser import GoldResultParser
 from dockstream.utils.enums.Gold_enums import GoldLigandPreparationEnum
 from dockstream.utils.enums.Gold_enums import GoldTargetKeywordEnum, GoldExecutablesEnum, GoldOutputEnum
+from dockstream.utils.general_utils import gen_temp_file
 
 from dockstream.utils.translations.molecule_translator import MoleculeTranslator
 from dockstream.utils.dockstream_exceptions import DockingRunFailed
@@ -114,15 +115,14 @@ class Gold(Docker):
         tmpdir = tempfile.mkdtemp()
         if self._target_dict[_TK.CAVITY_METHOD] == _TK.CAVITY_METHOD_REFERENCE:
             # write ligand to temporary file (ending copied over in settings)
-            _, tmp_ref_ligand_path = tempfile.mkstemp(suffix=self._target_dict[_TK.REFERENCE_LIGAND_FILENAME],
-                                                      dir=tmpdir)
+            tmp_ref_ligand_path = gen_temp_file(suffix=self._target_dict[_TK.REFERENCE_LIGAND_FILENAME], dir=tmpdir)
             with open(tmp_ref_ligand_path, 'w') as file:
                 for line in self._target_dict[_TK.REFERENCE_LIGAND]:
                     file.write(line)
                 self._logger.log(f"Wrote temporary ligand file {tmp_ref_ligand_path} with {len(self._target_dict[_TK.REFERENCE_LIGAND])} lines.", _LE.DEBUG)
 
             # write target PDB to temporary file
-            _, tmp_target_path = tempfile.mkstemp(suffix=".pdb", dir=tmpdir)
+            tmp_target_path = gen_temp_file(suffix=".pdb", dir=tmpdir)
             with open(tmp_target_path, 'w') as file:
                 for line in self._target_dict[_TK.TARGET_PDB]:
                     file.write(line)
@@ -172,7 +172,7 @@ class Gold(Docker):
         for start_index, sublist in zip(start_indices, sublists):
             # generate temporary input files and output directory
             cur_tmp_output_dir = tempfile.mkdtemp()
-            _, cur_tmp_sdf = tempfile.mkstemp(prefix=str(start_index), suffix=".sdf", dir=cur_tmp_output_dir)
+            cur_tmp_sdf = gen_temp_file(prefix=str(start_index), suffix=".sdf", dir=cur_tmp_output_dir)
             
             # write-out the temporary input file
             writer = Chem.SDWriter(cur_tmp_sdf)
@@ -191,7 +191,7 @@ class Gold(Docker):
                 continue
 
             # add the path to which "_dock_subjob()" will write the result SDF
-            _, output_sdf_path = tempfile.mkstemp(prefix=str(start_index), suffix="_result.sdf", dir=cur_tmp_output_dir)
+            output_sdf_path = gen_temp_file(prefix=str(start_index), suffix="_result.sdf", dir=cur_tmp_output_dir)
             tmp_output_dirs.append(cur_tmp_output_dir)
             tmp_output_sdf_paths.append(output_sdf_path)
             tmp_input_sdf_paths.append(cur_tmp_sdf)

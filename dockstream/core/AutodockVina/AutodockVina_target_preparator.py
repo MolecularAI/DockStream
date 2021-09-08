@@ -60,7 +60,7 @@ class AutodockVinaTargetPreparator(TargetPreparator):
 
     def _export_as_pdb2pdbqt(self, path):
         # generate temporary copy
-        _, temp_target_pdb = tempfile.mkstemp(suffix=".pdb")
+        temp_target_pdb = gen_temp_file(suffix=".pdb")
         Chem.MolToPDBFile(mol=self._target, filename=temp_target_pdb)
 
         # set target pH value that determines the protein's side-chain states

@@ -70,7 +70,7 @@ class rDockTargetPreparator(TargetPreparator):
         # --> bottom line: use openbabel instead of RDkit
 
         # generate temporary copy in Mol2 file
-        _, temp_target_pdb = tempfile.mkstemp(suffix=".pdb")
+        temp_target_pdb = gen_temp_file(suffix=".pdb")
         Chem.MolToPDBFile(mol=self._target, filename=temp_target_pdb)
 
         # kekulization of bonds leads to problems with PDB conversion of aromatic side-chains - ignore for now
@@ -97,7 +97,8 @@ class rDockTargetPreparator(TargetPreparator):
         line = [line for line in lines if "Total volume" in line][0]
         result[self._GK.SPECIFYCAVITY_METADATA_TOTALVOLUME] = float(line.split()[2])
 
-        # cavity 1, example: Cavity #1	Size=8206 points; Vol=1025.75 A^3; Min=(-5,1.5,18.5); Max=(13.5,20,31.5); Center=(4.5011,9.94851,24.5739); Extent=(18.5,18.5,13)
+        # cavity 1, example: Cavity #1	Size=8206 points; Vol=1025.75 A^3; Min=(-5,1.5,18.5); Max=(13.5,20,31.5);
+        # Center=(4.5011,9.94851,24.5739); Extent=(18.5,18.5,13)
         line = [line for line in lines if "Cavity #1" in line][0]
         parts = line.split()
         result[self._GK.SPECIFYCAVITY_METADATA_SIZEINPOINTS] = int(parts[2].split(sep='=')[1])

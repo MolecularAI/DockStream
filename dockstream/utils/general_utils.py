@@ -1,3 +1,5 @@
+import os
+import tempfile
 from dockstream.utils.files_paths import attach_root_path
 
 
@@ -44,3 +46,10 @@ def parse_setuppy():
             if "author" in line:
                 parsed_dict["author"] = line[line.find('"')+len('"'):line.rfind('"')]
     return parsed_dict
+
+
+# note that "text" is True (in contrast to the underlying "mkstemp")
+def gen_temp_file(suffix=None, prefix=None, dir=None, text=True) -> str:
+    filehandler, path = tempfile.mkstemp(suffix=suffix, prefix=prefix, dir=dir, text=text)
+    os.close(filehandler)
+    return path

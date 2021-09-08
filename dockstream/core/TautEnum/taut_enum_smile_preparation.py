@@ -10,6 +10,7 @@ from dockstream.utils.execute_external.TautEnum import TautEnumExecutor
 from dockstream.utils.enums.taut_enum_enums import TautEnumEnum
 from dockstream.utils.enums.logging_enums import LoggingConfigEnum
 from dockstream.core.ligand.ligand import Ligand, get_next_enumeration_number_for_ligand
+from dockstream.utils.general_utils import gen_temp_file
 
 
 class TautEnumSmilePreparator:
@@ -40,8 +41,8 @@ class TautEnumSmilePreparator:
 
         # 1) generate temporary folder and files
         tmp_output_dir_path = tempfile.mkdtemp()
-        fd, tmp_input_smiles_path = tempfile.mkstemp(suffix=".smi", dir=tmp_output_dir_path)
-        fd, tmp_output_smiles_path = tempfile.mkstemp(suffix=".smi", dir=tmp_output_dir_path)
+        tmp_input_smiles_path = gen_temp_file(suffix=".smi", dir=tmp_output_dir_path)
+        tmp_output_smiles_path = gen_temp_file(suffix=".smi", dir=tmp_output_dir_path)
 
         # 2) save the SMILES
         original_smiles = []

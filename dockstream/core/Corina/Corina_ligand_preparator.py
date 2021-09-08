@@ -14,6 +14,7 @@ from dockstream.core.ligand.ligand import get_next_enumeration_number_for_ligand
 from dockstream.core.ligand_preparator import LigandPreparator, _LE
 
 from dockstream.utils.dockstream_exceptions import LigandPreparationFailed
+from dockstream.utils.general_utils import gen_temp_file
 
 from dockstream.utils.smiles import to_mol
 from dockstream.utils.execute_external.Corina import CorinaExecutor
@@ -137,8 +138,8 @@ class CorinaLigandPreparator(LigandPreparator, BaseModel):
 
         # 1) generate temporary folder and files
         tmp_output_dir_path = tempfile.mkdtemp()
-        fd, tmp_smiles_path = tempfile.mkstemp(suffix=".smi", dir=tmp_output_dir_path)
-        fd, tmp_molecules_path = tempfile.mkstemp(suffix=".sdf", dir=tmp_output_dir_path)
+        tmp_smiles_path = gen_temp_file(suffix=".smi", dir=tmp_output_dir_path)
+        tmp_molecules_path = gen_temp_file(suffix=".sdf", dir=tmp_output_dir_path)
 
         # 2) save the SMILES
         with open(tmp_smiles_path, 'w') as f:

@@ -1,4 +1,3 @@
-import os
 import abc
 import time
 from copy import deepcopy
@@ -12,6 +11,7 @@ from pydantic import BaseModel, PrivateAttr
 from dockstream.loggers.docking_logger import DockingLogger
 from dockstream.loggers.blank_logger import BlankLogger
 from dockstream.utils.dockstream_exceptions import DockingRunFailed
+from dockstream.utils.files_paths import generate_folder_structure
 
 from dockstream.utils.parallelization.general_utils import split_into_sublists, get_progress_bar_string
 from dockstream.utils.enums.ligand_preparation_enum import LigandPreparationEnum
@@ -285,6 +285,10 @@ class Docker(BaseModel, metaclass=abc.ABCMeta):
         if not self._docking_performed:
             raise DockingRunFailed("Do the docking first.")
         selected_conformers = self._select_conformers(mode=mode, mol_type=mol_type)
+
+        # generate folder structure, if not available
+        generate_folder_structure(filepath=path)
+
         if mol_type == _LPE.TYPE_RDKIT:
             import rdkit.Chem as Chem
             writer = Chem.SDWriter(path)
@@ -377,6 +381,10 @@ class Docker(BaseModel, metaclass=abc.ABCMeta):
                     self._logger.log(f"Score output mode \"{mode}\" is unknown - write-out of scores failed.",
                                      _LE.ERROR)
                     raise DockingRunFailed()
+
+                # generate folder structure, if not available
+                generate_folder_structure(filepath=path)
+
                 df_buffer.to_csv(path_or_buf=path,
                                  sep=',',
                                  na_rep='',

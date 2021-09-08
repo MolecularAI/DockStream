@@ -19,6 +19,7 @@ from dockstream.utils.enums.RDkit_enums import RDkitLigandPreparationEnum
 from dockstream.utils.enums.logging_enums import LoggingConfigEnum
 from dockstream.utils.enums.transformations_enums import TransformationEnum
 from dockstream.utils.enums.stereo_enumeration_enums import StereoEnumerationEnum
+from dockstream.utils.files_paths import generate_folder_structure
 
 _DE = DockingConfigurationEnum()
 _LP = LigandPreparationEnum()
@@ -219,6 +220,9 @@ class LigandPreparator(BaseModel):
     def write_ligands(self, path, format):
         format = format.upper()
         ligands_copy = [deepcopy(lig) for lig in self.ligands]
+
+        # generate folder structure, if not available
+        generate_folder_structure(filepath=path)
 
         # check and specify format of file
         # RDkit does not support the write-out of MOL2 files (apparently because of the format's inherent ambiguity)

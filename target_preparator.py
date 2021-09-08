@@ -84,7 +84,7 @@ if __name__ == "__main__":
         pdb_prep = PDBPreparator(conf=config)
 
         # generate a temporary PDB file, that will be the input later
-        _, temp_pdb_file = tempfile.mkstemp(suffix=".pdb")
+        temp_pdb_file = gen_temp_file(suffix=".pdb")
 
         # apply the specified fixing and set the input PDB file
         pdb_prep.fix_pdb(input_pdb_file=input_pdb_path,

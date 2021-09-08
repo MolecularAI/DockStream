@@ -21,6 +21,7 @@ from dockstream.utils.enums.ligand_preparation_enum import LigandPreparationEnum
 from dockstream.utils.enums.Schrodinger_enums import SchrodingerExecutablesEnum, \
                                                  SchrodingerDockingConfigurationEnum, \
                                                  SchrodingerOutputEnum
+from dockstream.utils.general_utils import gen_temp_file
 
 from dockstream.utils.translations.molecule_translator import MoleculeTranslator
 from dockstream.utils.files_paths import any_in_file
@@ -336,7 +337,7 @@ class Glide(Docker, BaseModel):
 
         # arrange the elements and blocks
         if path is None:
-            _, path = tempfile.mkstemp(suffix=".in")
+            path = gen_temp_file(suffix=".in")
         with open(path, mode='w') as f:
             self._logger.log(f"Writing GLIDE input file {path}:\n", _LE.DEBUG)
             for line in element_lines:
@@ -362,8 +363,8 @@ class Glide(Docker, BaseModel):
         for start_index, sublist in zip(start_indices, sublists):
             # generate temporary input files and output directory
             cur_tmp_output_dir = tempfile.mkdtemp()
-            _, cur_tmp_sdf = tempfile.mkstemp(prefix=str(start_index), suffix=".sdf", dir=cur_tmp_output_dir)
-            _, cur_tmp_mae = tempfile.mkstemp(prefix=str(start_index), suffix=".mae", dir=cur_tmp_output_dir)
+            cur_tmp_sdf = gen_temp_file(prefix=str(start_index), suffix=".sdf", dir=cur_tmp_output_dir)
+            cur_tmp_mae = gen_temp_file(prefix=str(start_index), suffix=".mae", dir=cur_tmp_output_dir)
 
             # write-out the temporary input file
             writer = Chem.SDWriter(cur_tmp_sdf)
@@ -385,7 +386,7 @@ class Glide(Docker, BaseModel):
             self._translate_SDF_to_MAE(sdf_path=cur_tmp_sdf, mae_path=cur_tmp_mae)
 
             # add the path to which "_dock_subjob()" will write the result SDF
-            _, output_sdf_path = tempfile.mkstemp(prefix=str(start_index), suffix="_result.sdf", dir=cur_tmp_output_dir)
+            output_sdf_path = gen_temp_file(prefix=str(start_index), suffix="_result.sdf", dir=cur_tmp_output_dir)
             tmp_output_sdf_paths.append(output_sdf_path)
             tmp_input_mae_paths.append(cur_tmp_mae)
             tmp_output_dirs.append(cur_tmp_output_dir)
@@ -474,7 +475,7 @@ class Glide(Docker, BaseModel):
         keywords[_EE.GLIDE_LIGANDFILE] = mae_ligand_path
 
         # 2) write the keyword-input file for the "Glide" backend; write-out to temporary file
-        _, glide_keywords_path = tempfile.mkstemp(suffix=".in", dir=tmp_output_dir)
+        glide_keywords_path = gen_temp_file(suffix=".in", dir=tmp_output_dir)
         _ = self._write_keywords_to_file(keywords=keywords, path=glide_keywords_path)
 
         # 3) wait / sleep until job is completed

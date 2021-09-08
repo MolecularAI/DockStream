@@ -18,6 +18,7 @@ from dockstream.utils.enums.AutodockVina_enums import AutodockVinaExecutablesEnu
 from dockstream.utils.execute_external.OpenBabel import OpenBabelExecutor
 from dockstream.utils.enums.OpenBabel_enums import OpenBabelExecutablesEnum
 from dockstream.utils.enums.RDkit_enums import RDkitLigandPreparationEnum
+from dockstream.utils.general_utils import gen_temp_file
 
 from dockstream.utils.translations.molecule_translator import MoleculeTranslator
 from dockstream.utils.dockstream_exceptions import DockingRunFailed
@@ -112,7 +113,7 @@ class AutodockVina(Docker, BaseModel):
 
     def _write_molecule_to_pdbqt(self, path, molecule) -> bool:
         # generate temporary copy as PDB
-        _, temp_pdb = tempfile.mkstemp(suffix=".pdb")
+        temp_pdb = gen_temp_file(suffix=".pdb")
         Chem.MolToPDBFile(mol=molecule, filename=temp_pdb)
 
         # Note: In contrast to the target preparation,
@@ -149,8 +150,8 @@ class AutodockVina(Docker, BaseModel):
             for ligand in sublist:
                 # generate temporary input files and output directory
                 cur_tmp_output_dir = tempfile.mkdtemp()
-                _, cur_tmp_input_pdbqt = tempfile.mkstemp(prefix=str(start_index), suffix=".pdbqt", dir=cur_tmp_output_dir)
-                _, cur_tmp_output_sdf = tempfile.mkstemp(prefix=str(start_index), suffix=".sdf", dir=cur_tmp_output_dir)
+                cur_tmp_input_pdbqt = gen_temp_file(prefix=str(start_index), suffix=".pdbqt", dir=cur_tmp_output_dir)
+                cur_tmp_output_sdf = gen_temp_file(prefix=str(start_index), suffix=".sdf", dir=cur_tmp_output_dir)
 
                 # write-out the temporary input file
                 if ligand.get_molecule() is None:
@@ -250,11 +251,11 @@ class AutodockVina(Docker, BaseModel):
 
     def _dock_subjob(self, input_path_pdbqt, output_path_sdf):
         # at the moment, the log file is not parsed
-        _, path_log_file = tempfile.mkstemp(suffix=".log", dir=os.path.dirname(input_path_pdbqt))
+        path_log_file = gen_temp_file(suffix=".log", dir=os.path.dirname(input_path_pdbqt))
 
         # set up arguments list and execute
         # TODO: support "ensemble docking" - currently, only the first entry is used
-        _, tmp_pdbqt_docked = tempfile.mkstemp(suffix=".pdbqt", dir=os.path.dirname(input_path_pdbqt))
+        tmp_pdbqt_docked = gen_temp_file(suffix=".pdbqt", dir=os.path.dirname(input_path_pdbqt))
         search_space = self.parameters.search_space
         arguments = [_EE.VINA_RECEPTOR, self.parameters.receptor_pdbqt_path[0],
                      _EE.VINA_LIGAND, input_path_pdbqt,

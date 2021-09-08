@@ -7,6 +7,7 @@ from rdkit import Chem
 from dockstream.core.pdb_preparator import PDBPreparator
 from dockstream.containers.target_preparation_container import TargetPreparationContainer
 from dockstream.utils.enums.target_preparation_enum import TargetPreparationEnum
+from dockstream.utils.general_utils import gen_temp_file
 
 from tests.tests_paths import PATHS_1UYD
 from dockstream.utils.files_paths import attach_root_path
@@ -33,7 +34,7 @@ class Test_PDBPreparation(unittest.TestCase):
                                                                                 self._TE.FIX_REMOVEHETEROGENS: True,
                                                                                 self._TE.FIX_MISSINGHYDROGENS: False}}})
         input_pdb_file = attach_root_path(PATHS_1UYD.TARGET_APO_PDB)
-        _, temp_pdb_output = tempfile.mkstemp(suffix=".pdb")
+        temp_pdb_output = gen_temp_file(suffix=".pdb")
         input_mol = Chem.MolFromPDBFile(input_pdb_file, sanitize=True)
 
         # first processing: add water box and do not fix hydrogens that are missing
@@ -51,7 +52,7 @@ class Test_PDBPreparation(unittest.TestCase):
         os.remove(temp_pdb_output)
 
         # second processing: no water box and but add hydrogens
-        _, temp_pdb_output = tempfile.mkstemp(suffix=".pdb")
+        temp_pdb_output = gen_temp_file(suffix=".pdb")
         conf[self._TE.TARGETPREP][self._TE.FIX][self._TE.FIX_ADDWATERBOX] = False
         conf[self._TE.TARGETPREP][self._TE.FIX][self._TE.FIX_MISSINGHYDROGENS] = True
         prep = PDBPreparator(conf=conf)
@@ -69,7 +70,7 @@ class Test_PDBPreparation(unittest.TestCase):
                                                                                 self._TE.FIX_REMOVEHETEROGENS: True,
                                                                                 self._TE.FIX_MISSINGHYDROGENS: True}}})
         input_pdb_file = attach_root_path(PATHS_1UYD.LIGAND_MISSING_PARTS_PDB)
-        _, temp_pdb_output = tempfile.mkstemp(suffix=".pdb")
+        temp_pdb_output = gen_temp_file(suffix=".pdb")
         input_mol = Chem.MolFromPDBFile(input_pdb_file, sanitize=True)
         prep = PDBPreparator(conf=conf)
         self.assertEqual(input_mol.GetNumAtoms(), 1892)

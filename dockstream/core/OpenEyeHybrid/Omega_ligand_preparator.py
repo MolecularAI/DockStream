@@ -14,6 +14,7 @@ from copy import deepcopy
 from dockstream.core.ligand.ligand import Ligand, get_enumerations_for_ligand
 
 from dockstream.core.ligand_preparator import LigandPreparator, _LE
+from dockstream.utils.general_utils import gen_temp_file
 from dockstream.utils.parallelization.general_utils import split_into_sublists, get_progress_bar_string
 
 from dockstream.loggers.blank_logger import BlankLogger
@@ -158,8 +159,8 @@ class OmegaLigandPreparator(LigandPreparator, BaseModel):
             # generate temporary input files and output directory
             cur_tmp_output_dir = tempfile.mkdtemp()
             tmp_output_dirs.append(cur_tmp_output_dir)
-            _, cur_tmp_sdf = tempfile.mkstemp(prefix=str(start_index), suffix=".sdf", dir=cur_tmp_output_dir)
-            _, cur_tmp_smi = tempfile.mkstemp(prefix=str(start_index), suffix=".smi", dir=cur_tmp_output_dir)
+            cur_tmp_sdf = gen_temp_file(prefix=str(start_index), suffix=".sdf", dir=cur_tmp_output_dir)
+            cur_tmp_smi = gen_temp_file(prefix=str(start_index), suffix=".smi", dir=cur_tmp_output_dir)
             tmp_input_smi_paths.append(cur_tmp_smi)
 
             # write smiles to temporary file as "OMEGA" backend
@@ -168,7 +169,7 @@ class OmegaLigandPreparator(LigandPreparator, BaseModel):
                     f.write(lig.get_smile() + " " + lig.get_identifier() + "\n")
 
             # add the path to which "_dock_subjob()" will write the result SDF
-            _, output_sdf_path = tempfile.mkstemp(prefix=str(start_index), suffix="_result.sdf", dir=cur_tmp_output_dir)
+            output_sdf_path = gen_temp_file(prefix=str(start_index), suffix="_result.sdf", dir=cur_tmp_output_dir)
             tmp_output_sdf_paths.append(output_sdf_path)
 
         return tmp_output_dirs, tmp_input_smi_paths, tmp_output_sdf_paths

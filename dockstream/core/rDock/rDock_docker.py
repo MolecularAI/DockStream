@@ -16,6 +16,7 @@ from dockstream.utils.enums.logging_enums import LoggingConfigEnum
 from dockstream.utils.execute_external.rDock import rDockExecutor
 from dockstream.utils.enums.rDock_enums import rDockExecutablesEnum, rDockDockingConfigurationEnum, rDockRbdockOutputEnum
 from dockstream.utils.enums.RDkit_enums import RDkitLigandPreparationEnum
+from dockstream.utils.general_utils import gen_temp_file
 
 from dockstream.utils.translations.molecule_translator import MoleculeTranslator
 from dockstream.utils.dockstream_exceptions import DockingRunFailed
@@ -88,7 +89,7 @@ class rDock(Docker):
 
             # generate temporary input file and output directory into which "rbdock" will deposit the poses
             cur_tmp_output_dir = tempfile.mkdtemp()
-            _, cur_tmp_sdf = tempfile.mkstemp(prefix=str(start_index), suffix=".sdf", dir=cur_tmp_output_dir)
+            cur_tmp_sdf = gen_temp_file(prefix=str(start_index), suffix=".sdf", dir=cur_tmp_output_dir)
 
             # write-out the temporary input file
             one_written = False

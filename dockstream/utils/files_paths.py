@@ -1,6 +1,7 @@
 import os
 import time
 import json
+from pathlib import Path
 
 
 def wait_until_file_generation(path, interval_sec=1, maximum_sec=None) -> bool:
@@ -58,3 +59,8 @@ def any_in_file(path, strings):
             return False
     else:
         return False
+
+
+def generate_folder_structure(filepath: str):
+    folder_path = os.path.dirname(filepath)
+    Path(folder_path).mkdir(parents=True, exist_ok=True)
