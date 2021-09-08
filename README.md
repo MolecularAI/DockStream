@@ -25,7 +25,7 @@ structural information.
 * **[Schrodinger's `Glide`](https://www.schrodinger.com/glide)**
 * **[CCDC's `GOLD`](https://www.ccdc.cam.ac.uk/solutions/csd-discovery/components/gold)**
 
-Note, that the `CCDC` package, the `OpenEye` toolkit and `Schrodinger`'s tools require you to obtain the respective software from those vendors.
+Note: The `CCDC` package, the `OpenEye` toolkit and `Schrodinger`'s tools require you to obtain the respective software from those vendors.
 
 ## Tutorials and Usage
 Detailed `Jupyter Notebook` tutorials for all `DockStream` functionalities and workflows are provided in 
