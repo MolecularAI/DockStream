@@ -178,12 +178,12 @@ class AutodockVina(Docker, BaseModel):
         if not os.path.exists(self.parameters.receptor_pdbqt_path[0]):
             raise DockingRunFailed("Specified PDBQT path to target (receptor) does not exist - abort.")
 
-        jobs_submitted = 0
+        sublists_submitted = 0
         slices_per_iteration = min(number_cores, number_sublists)
-        while jobs_submitted < len(sublists):
-            upper_bound_slice = min((jobs_submitted + slices_per_iteration), len(sublists))
-            cur_slice_start_indices = start_indices[jobs_submitted:upper_bound_slice]
-            cur_slice_sublists = sublists[jobs_submitted:upper_bound_slice]
+        while sublists_submitted < len(sublists):
+            upper_bound_slice = min((sublists_submitted + slices_per_iteration), len(sublists))
+            cur_slice_start_indices = start_indices[sublists_submitted:upper_bound_slice]
+            cur_slice_sublists = sublists[sublists_submitted:upper_bound_slice]
 
             # generate paths and initialize molecules (so that if they fail, this can be covered)
             tmp_output_dirs, tmp_input_paths, tmp_output_paths, \
@@ -197,9 +197,12 @@ class AutodockVina(Docker, BaseModel):
                                                                             tmp_output_paths[chunk_index]))
                 processes.append(p)
                 p.start()
-                jobs_submitted += 1
             for p in processes:
                 p.join()
+
+            # add the number of input sublists rather than the output temporary folders to account for cases where
+            # entire sublists failed to produce an input structure
+            sublists_submitted += len(cur_slice_sublists)
 
             # parse the resulting sdf files
             for path_sdf_results, cur_identifier in zip(tmp_output_paths, ligand_identifiers):
@@ -226,7 +229,7 @@ class AutodockVina(Docker, BaseModel):
             # clean-up
             for path in tmp_output_dirs:
                 shutil.rmtree(path)
-            self._log_docking_progress(number_done=jobs_submitted, number_total=number_sublists)
+            self._log_docking_progress(number_done=sublists_submitted, number_total=number_sublists)
 
         # the conformers are already sorted, but some tags are missing
         # -> <ligand_number>:<enumeration>:<conformer_number>

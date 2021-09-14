@@ -185,13 +185,13 @@ class OmegaLigandPreparator(LigandPreparator, BaseModel):
         number_sublists = len(sublists)
         self._logger.log(f"Split ligands into {number_sublists} sublists for embedding.", _LE.DEBUG)
 
-        jobs_submitted = 0
+        sublists_submitted = 0
         slices_per_iteration = min(number_cores, number_sublists)
         if isinstance(self.ligands[0].get_molecule(), Chem.Mol):
-            while jobs_submitted < len(sublists):
-                upper_bound_slice = min((jobs_submitted + slices_per_iteration), len(sublists))
-                cur_slice_start_indices = start_indices[jobs_submitted:upper_bound_slice]
-                cur_slice_sublists = sublists[jobs_submitted:upper_bound_slice]
+            while sublists_submitted < len(sublists):
+                upper_bound_slice = min((sublists_submitted + slices_per_iteration), len(sublists))
+                cur_slice_start_indices = start_indices[sublists_submitted:upper_bound_slice]
+                cur_slice_sublists = sublists[sublists_submitted:upper_bound_slice]
 
                 # generate paths and initialize molecules (so that if they fail, this can be covered)
                 tmp_output_dirs, tmp_input_smi_paths, \
@@ -206,9 +206,12 @@ class OmegaLigandPreparator(LigandPreparator, BaseModel):
                                                       tmp_output_dirs[chunk_index]))
                     processes.append(p)
                     p.start()
-                    jobs_submitted += 1
                 for p in processes:
                     p.join()
+
+                # add the number of input sublists rather than the output temporary folders to account for cases where
+                # entire sublists failed to produce an input structure
+                sublists_submitted += len(cur_slice_sublists)
 
                 # load and store the conformers; name it sequentially
                 # note, that some backends require the H-coordinates (such as Glide) - so keep them!
@@ -262,7 +265,7 @@ class OmegaLigandPreparator(LigandPreparator, BaseModel):
                 # remove temporary files
                 for path in tmp_output_dirs:
                     shutil.rmtree(path)
-                self._log_docking_progress(number_done=jobs_submitted, number_total=number_sublists)
+                self._log_docking_progress(number_done=sublists_submitted, number_total=number_sublists)
 
         # check success and failure with embedding
         failed = 0

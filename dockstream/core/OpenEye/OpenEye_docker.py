@@ -141,20 +141,20 @@ class OpenEye(Docker):
         number_sublists = len(sublists)
         self._logger.log(f"Split ligands into {len(sublists)} sublists for docking.", _LE.DEBUG)
 
-        jobs_submitted = 0
-        while jobs_submitted < len(sublists):
+        sublists_submitted = 0
+        while sublists_submitted < len(sublists):
             processes = []
             return_queues = []
             for _ in range(number_cores):
-                if jobs_submitted >= len(sublists):
+                if sublists_submitted >= len(sublists):
                     continue
                 cur_queue = multiprocessing.Queue()
-                p = multiprocessing.Process(target=self._dock_subjob, args=(sublists[jobs_submitted],
+                p = multiprocessing.Process(target=self._dock_subjob, args=(sublists[sublists_submitted],
                                                                             cur_queue))
                 processes.append(p)
                 p.start()
                 return_queues.append(cur_queue)
-                jobs_submitted += 1
+                sublists_submitted += 1
             for p in processes:
                 p.join()
 
@@ -164,7 +164,7 @@ class OpenEye(Docker):
                         if cur_ligand_name == ligand.get_identifier():
                             ligand.set_conformers(cur_slice[cur_ligand_name])
                             break
-            self._log_docking_progress(number_done=jobs_submitted, number_total=number_sublists)
+            self._log_docking_progress(number_done=sublists_submitted, number_total=number_sublists)
 
         # update conformer names to contain the conformer id -> <ligand_number>:<enumeration>:<conformer_number>
         for ligand in self.ligands:

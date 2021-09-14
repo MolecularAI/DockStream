@@ -398,13 +398,13 @@ class Glide(Docker, BaseModel):
         number_sublists = len(sublists)
         number_ligands_per_sublist = len(sublists[0])
         self._logger.log(f"Split ligands into {number_sublists} sublists for docking.", _LE.DEBUG)
-        jobs_submitted = 0
+        sublists_submitted = 0
         slices_per_iteration = min(number_cores, number_sublists)
 
-        while jobs_submitted < len(sublists):
-            upper_bound_slice = min((jobs_submitted + slices_per_iteration), len(sublists))
-            cur_slice_start_indices = start_indices[jobs_submitted:upper_bound_slice]
-            cur_slice_sublists = sublists[jobs_submitted:upper_bound_slice]
+        while sublists_submitted < len(sublists):
+            upper_bound_slice = min((sublists_submitted + slices_per_iteration), len(sublists))
+            cur_slice_start_indices = start_indices[sublists_submitted:upper_bound_slice]
+            cur_slice_sublists = sublists[sublists_submitted:upper_bound_slice]
 
             # generate paths and initialize molecules (so that if they fail, this can be covered)
             tmp_output_dirs, tmp_input_mae_paths, \
@@ -424,9 +424,12 @@ class Glide(Docker, BaseModel):
                                                                             number_ligands_per_sublist))
                 processes.append(p)
                 p.start()
-                jobs_submitted += 1
             for p in processes:
                 p.join()
+
+            # add the number of input sublists rather than the output temporary folders to account for cases where
+            # entire sublists failed to produce an input structure
+            sublists_submitted += len(cur_slice_sublists)
 
             # parse the resulting sdf files
             for path_sdf_results in tmp_output_sdf_paths:
@@ -449,7 +452,7 @@ class Glide(Docker, BaseModel):
             # clean-up
             for path in tmp_output_dirs:
                 shutil.rmtree(path)
-            self._log_docking_progress(number_done=jobs_submitted, number_total=number_sublists)
+            self._log_docking_progress(number_done=sublists_submitted, number_total=number_sublists)
 
         # sort the conformers (best to worst) and update their names to contain the conformer id
         # -> <ligand_number>:<enumeration>:<conformer_number>

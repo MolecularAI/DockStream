@@ -133,13 +133,13 @@ class OpenEyeHybrid(Docker):
         start_indices, sublists = self.get_sublists_for_docking(number_cores=number_cores)
         number_sublists = len(sublists)
         self._logger.log(f"Split ligands into {number_sublists} sublists for docking.", _LE.DEBUG)
-        jobs_submitted = 0
+        sublists_submitted = 0
         slices_per_iteration = min(number_cores, number_sublists)
 
-        while jobs_submitted < len(sublists):
-            upper_bound_slice = min((jobs_submitted + slices_per_iteration), len(sublists))
-            cur_slice_start_indices = start_indices[jobs_submitted:upper_bound_slice]
-            cur_slice_sublists = sublists[jobs_submitted:upper_bound_slice]
+        while sublists_submitted < len(sublists):
+            upper_bound_slice = min((sublists_submitted + slices_per_iteration), len(sublists))
+            cur_slice_start_indices = start_indices[sublists_submitted:upper_bound_slice]
+            cur_slice_sublists = sublists[sublists_submitted:upper_bound_slice]
 
             # generate paths and initialize molecules (so that if they fail, this can be covered)
             tmp_output_dirs, tmp_input_sdf_paths, \
@@ -154,9 +154,12 @@ class OpenEyeHybrid(Docker):
                                                                             tmp_output_dirs[chunk_index]))
                 processes.append(p)
                 p.start()
-                jobs_submitted += 1
             for p in processes:
                 p.join()
+
+            # add the number of input sublists rather than the output temporary folders to account for cases where
+            # entire sublists failed to produce an input structure
+            sublists_submitted += len(cur_slice_sublists)
 
             # load the chunks and recombine the result; add conformations
             for chunk_index in range(len(tmp_output_dirs)):
@@ -180,7 +183,7 @@ class OpenEyeHybrid(Docker):
             # clean-up
             for path in tmp_output_dirs:
                 shutil.rmtree(path)
-            self._log_docking_progress(number_done=jobs_submitted, number_total=number_sublists)
+            self._log_docking_progress(number_done=sublists_submitted, number_total=number_sublists)
 
         # sort the conformers (best to worst), update their names to contain the conformer id and add tags
         # -> <ligand_number>:<enumeration>:<conformer_number>
