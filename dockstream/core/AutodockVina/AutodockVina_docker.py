@@ -253,8 +253,6 @@ class AutodockVina(Docker, BaseModel):
         return parts[_ROE.RESULT_LINE_POS_SCORE]
 
     def _dock_subjob(self, input_path_pdbqt, output_path_sdf):
-        # at the moment, the log file is not parsed
-        path_log_file = gen_temp_file(suffix=".log", dir=os.path.dirname(input_path_pdbqt))
 
         # set up arguments list and execute
         # TODO: support "ensemble docking" - currently, only the first entry is used
@@ -271,8 +269,7 @@ class AutodockVina(Docker, BaseModel):
                      _EE.VINA_SIZE_X, str(search_space.size_x),
                      _EE.VINA_SIZE_Y, str(search_space.size_y),
                      _EE.VINA_SIZE_Z, str(search_space.size_z),
-                     _EE.VINA_NUM_MODES, self.parameters.number_poses,
-                     _EE.VINA_LOG, path_log_file]
+                     _EE.VINA_NUM_MODES, self.parameters.number_poses]
 
         execution_result = self._ADV_executor.execute(command=_EE.VINA,
                                                       arguments=arguments,

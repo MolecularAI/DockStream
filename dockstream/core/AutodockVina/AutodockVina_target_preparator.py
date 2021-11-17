@@ -1,5 +1,3 @@
-import os
-import tempfile
 from rdkit import Chem
 
 from dockstream.utils.dockstream_exceptions import TargetPreparationFailed

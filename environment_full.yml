@@ -17,6 +17,7 @@ dependencies:
   - numpy
   - openeye-toolkits >= 2019
   - openbabel
+  - openmm
   - scipy
   - pydantic
   - pdbfixer

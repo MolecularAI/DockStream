@@ -1,7 +1,7 @@
 import warnings
 from pdbfixer import PDBFixer
-from simtk.openmm.vec3 import Vec3
-from simtk.openmm.app import PDBFile
+from openmm.vec3 import Vec3
+from openmm.app import PDBFile
 
 from dockstream.loggers.target_preparation_logger import TargetPreparationLogger
 from dockstream.utils.dockstream_exceptions import TargetPreparationFailed
