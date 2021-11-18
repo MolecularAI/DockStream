@@ -37,6 +37,11 @@ The templates are organized as follows:
 * `docking`: Docking ligands
 * `integration`: Combining different ligand embedders and docking backends into a single input `JSON` to run successively
 
+## Using DockStream in REINVENT
+DockStream provides a flexible implementation of molecular docking as a scoring function component in REINVENT. The generative 
+agent is able to gradually generate compounds that satisfy the DockStream component, i.e, achieve favourable docking scores. 
+A [tutorial notebook](https://github.com/MolecularAI/ReinventCommunity/blob/master/notebooks/Reinforcement_Learning_Demo_DockStream.ipynb) is provided.
+
 ## Requirements
 Two Conda environments are provided: `DockStream` via `environment.yml` and `DockStreamFull` via `environment_full.yml`.
 `DockStream` suffices for all use cases except when `CCDC GOLD` software is used, in which case `DockStreamFull` is required.
